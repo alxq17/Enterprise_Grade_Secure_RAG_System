@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Data
+data/
+*.pdf
+*.docx
+.agents/
+
+# Logs & Vector DB storage
+qdrant_storage/
+*.log
+
+AGENTS.md
+CLAUDE.md
+verirag_project_readme.md
