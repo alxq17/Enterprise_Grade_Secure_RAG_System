@@ -1,12 +1,17 @@
 services:
   qdrant:
-    image: qdrant/qdrant:v1.10.0
+    image: qdrant/qdrant:v1.19.2
     container_name: verirag-qdrant
     ports:
+      # REST API and Web DataBoard
       - "6333:6333"
+      # gRPC API
       - "6334:6334"
     volumes:
-      - qdrant:/qdrant/storage
+      - ./qdrant_storage:/qdrant/storage:z
+    restart: unless-stopped
+    environment:
+      - QDRANT__SERVICE__ENABLE_STATIC_CONTENT=true
     networks:
       - verirag
 
