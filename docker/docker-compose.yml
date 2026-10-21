@@ -1,22 +1,32 @@
+name: verirag
+
+networks:
+  verirag-net:
+    driver: bridge
+volumes:
+  qdrant_storage:
+  prometheus_data:
+  grafana_data:
+
 services:
   qdrant:
     image: qdrant/qdrant:v1.19.2
     container_name: verirag-qdrant
+    restart: unless-stopped
     ports:
       # REST API and Web DataBoard
       - "6333:6333"
       # gRPC API
       - "6334:6334"
     volumes:
-      - ./qdrant_storage:/qdrant/storage:z
-    restart: unless-stopped
+      - ./qdrant_storage:/qdrant/storage
     environment:
       - QDRANT__SERVICE__ENABLE_STATIC_CONTENT=true
     networks:
-      - verirag
-
-volumes:
-  qdrant:
-
-networks:
-  verirag:
+      - verirag-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
