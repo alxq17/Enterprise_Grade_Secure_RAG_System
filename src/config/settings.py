@@ -30,6 +30,8 @@ class Settings(BaseSettings):
         description="Google Gemini API key",
     )
     GEMINI_MODEL: str = "gemini-1.5-flash"
+    LLM_TIMEOUT_SECONDS: int = 30
+    LLM_MAX_RETRIES: int = 3
 
     # API
     API_PORT: int = 8000
