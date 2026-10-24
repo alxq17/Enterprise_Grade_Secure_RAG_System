@@ -57,6 +57,7 @@ class HybridRetriever:
       results.append({
           "chunk_id": str(point.id),
           "score": point.score,
+          "score_rrf": point.score,
           "text": payload.get("text", ""),
           "metadata": {
               "source_file": payload.get("source_file", "unknown"),
