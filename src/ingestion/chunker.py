@@ -1,7 +1,7 @@
 import uuid 
 from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from loguru import logger
+from src.core.logging import app_logger
 
 class DocumentChunker:
      def __init__ (self, chunk_size: int = 512, chunk_overlap: int = 50):
@@ -36,11 +36,11 @@ class DocumentChunker:
 
           if chunks:
                avg_len = sum(c["metadata"]["char_count"] for c in chunks) // len(chunks)
-               logger.info(
+               app_logger.info(
                     f"Created {len(chunks)} chunks | Average length: {avg_len} words "
                     f"(chunk_size={self.chunk_size}, overlap={self.chunk_overlap})"
                )
           else:
-               logger.warning("No chunks were generated from the input text.")
+               app_logger.warning("No chunks were generated from the input text.")
 
           return chunks

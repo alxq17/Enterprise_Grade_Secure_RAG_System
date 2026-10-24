@@ -52,11 +52,11 @@ class QdrantIndexer:
           dense_vecs = embeddings["dense_vecs"]
           lexical_weights = embeddings["lexical_weights"]
 
-          assert len(chunks) == dense_vecs, (
+          assert len(chunks) == len(dense_vecs), (
                "Number of chunks and number of vectors do not match"
           )
 
-          assert len(chunks) == lexical_weights, (
+          assert len(chunks) == len(lexical_weights), (
                "Nmber of chunks and lexical weights do not match"
           )
 
@@ -87,6 +87,8 @@ class QdrantIndexer:
                     wait=True,
                )
                app_logger.info(f"[Indexer] Upserted {i + len(batch)} / {len(points)} points")
+
+          return len(points)
           
      def count_points(self) -> int:
           info = self.client.get_collection(self.collection_name)
