@@ -1,24 +1,41 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 .venv/
 venv/
-.env
+env/
+*.egg-info/
 
 # IDE
 .vscode/
 .idea/
 
-# Data
-data/
-*.pdf
-*.docx
-.agents/
+# Env
+.env
+.env.local
 
-# Logs & Vector DB storage
-qdrant_storage/
+# Data — cho phép commit golden
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/golden/
+!data/golden/golden_dataset.json
+
+# Docker / logs
 *.log
-
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+qdrant_storage/
+.agents/
+architecture.md
 AGENTS.md
 CLAUDE.md
 verirag_project_readme.md
+scritp.md

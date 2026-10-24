@@ -1,0 +1,33 @@
+[project]
+name = "enterprise-secure-rag"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "data", "docker"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-ra -q --strict-markers"
+markers = [
+    "integration: marks tests requiring Docker/Qdrant/Gemini",
+    "slow: marks slow tests (BGE-M3 load)",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+exclude = ["tests/", "scripts/"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
