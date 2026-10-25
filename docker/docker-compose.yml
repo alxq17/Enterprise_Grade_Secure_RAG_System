@@ -5,6 +5,7 @@ networks:
     driver: bridge
 volumes:
   qdrant_storage:
+  hf_cache:
   prometheus_data:
   grafana_data:
 
@@ -30,3 +31,62 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
+  # 2 FastAPI Application 
+  fastapi:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: verirag-fastapi
+    restart: unless-stopped
+    environment:
+      QDRANT_HOST: qdrant 
+      QDRANT_PORT: 6333
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
+      COLLECTION_NAME: ${COLLECTION_NAME:-enterprise_docs}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DOMAIN_SIMILARITY_THRESHOLD: ${DOMAIN_SIMILARITY_THRESHOLD:-0.35}
+    volumes:
+      - ../src:/app/src 
+      - hf_cache:/app/.cache/huggingface 
+    networks:
+      - verirag-net
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.fastapi.entrypoints=web"
+      - "traefik.http.services.fastapi.loadbalancer.server.port=8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz', timeout=3).status==200 else 1)\""]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    command: ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  # 3 Traefik Reverse Proxy 
+  traefik:
+    profiles: ["full"]
+    image: traefik:v3.0
+    container_name: verirag-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=verirag-net"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"   
+      - "8088:8080" 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - verirag-net
