@@ -1,0 +1,36 @@
+# Git & Version Control
+.git/
+.gitignore
+
+# Python virtual environment & cache
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+
+# Local configuration & secrets
+.env
+.env.*
+!.env.example
+
+# Large data & model caches
+data/raw/
+data/processed/
+.cache/
+hf_cache/
+docker/qdrant_storage/
+
+# IDE & workspace files
+.idea/
+.vscode/
+.gemini/
+.agents/
+
+# Logs & reports
+reports/
+*.log
