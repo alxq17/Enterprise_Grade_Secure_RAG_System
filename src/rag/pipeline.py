@@ -58,6 +58,7 @@ class RAGPipeline:
                 "answer": "The current internal documentation does not contain information relevant to this question.",
                 "sources": [],
                 "retrieved_chunks": [],
+                "contexts": [],
                 "tokens": {"input": 0, "output": 0},
                 "timings_ms": timings,
             }
@@ -93,6 +94,7 @@ class RAGPipeline:
             "answer": final_answer,
             "sources": sources,
             "retrieved_chunks": retrieved_meta,
+            "contexts": [c.get("text", "") for c in top_chunks],
             "tokens": {
                 "input": llm_response["input_tokens"],
                 "output": llm_response["output_tokens"],
