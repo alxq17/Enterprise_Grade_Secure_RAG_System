@@ -34,8 +34,5 @@ htmlcov/
 .coverage
 qdrant_storage/
 .agents/
-architecture.md
 AGENTS.md
-CLAUDE.md
-verirag_project_readme.md
-scritp.md
+acknow.txt
