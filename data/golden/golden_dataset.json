@@ -1,0 +1,52 @@
+[
+     {
+          "question": "What is the minimum required password length according to the policy?",
+          "ground_truth": "Passwords must be at least 12 characters long and changed every 90 days.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "When is Multi-Factor Authentication (MFA) required?",
+          "ground_truth": "All employees are required to use Multi-Factor Authentication (MFA) when accessing the internal corporate VPN.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "How should customer PII be encrypted?",
+          "ground_truth": "Customers' Personally Identifiable Information (PII) must be encrypted using the AES-256 standard both at-rest and in-transit.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "Is using public Wi-Fi allowed for remote work?",
+          "ground_truth": "Using public Wi-Fi networks to access internal systems is strictly prohibited.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "What is the required password change frequency?",
+          "ground_truth": "Passwords must be changed periodically every 90 days.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "Can PII data be shared via email or public chat channels?",
+          "ground_truth": "Sharing files containing PII via public chat channels or unapproved personal email is strictly prohibited.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "What software must be installed on personal devices used for work?",
+          "ground_truth": "All personal devices used for work must have antivirus software provided by the IT department installed.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "What characters must be included in passwords?",
+          "ground_truth": "Passwords must include uppercase letters, lowercase letters, numbers, and special characters.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "What type of data includes customer names and credit card details?",
+          "ground_truth": "Personally Identifiable Information (PII) includes full names, phone numbers, Social Security numbers, and credit card information.",
+          "source_file": "company_security_policy.md"
+     },
+     {
+          "question": "What is the minimum unit test code coverage required before merging code?",
+          "ground_truth": "Unit tests must achieve a minimum code coverage of 80% before merging into the main branch.",
+          "source_file": "company_security_policy.md"
+     }
+]
