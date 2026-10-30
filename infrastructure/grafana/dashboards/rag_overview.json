@@ -1,0 +1,84 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "HTTP Request Rate (req/sec)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rate(rag_http_requests_total[1m])) by (endpoint, status_code)",
+          "legendFormat": "{{endpoint}} - {{status_code}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "title": "P95 Response Latency (Seconds)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum(rate(rag_http_request_duration_seconds_bucket[1m])) by (le))",
+          "legendFormat": "P95 Latency",
+          "range": true
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "title": "Guardrail Blocks Count",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rag_guardrail_blocked_total) by (guardrail_type)",
+          "legendFormat": "{{guardrail_type}}",
+          "range": false
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "title": "Cumulative Gemini Token Usage",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "editorMode": "code",
+          "expr": "sum(rag_gemini_tokens_total) by (token_type)",
+          "legendFormat": "{{token_type}} tokens",
+          "range": false
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["verirag", "mlops", "observability"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "VeriRAG Enterprise Overview",
+  "version": 2
+}
