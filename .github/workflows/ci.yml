@@ -1,0 +1,149 @@
+name: VeriRAG DevSecOps CI Pipeline
+
+on:
+  push:
+    branches: [main, master, "feature/**"]
+  pull_request:
+    branches: [main, master]
+
+env:
+  PYTHON_VERSION: "3.11"
+  QDRANT_HOST: "localhost"
+  QDRANT_PORT: "6333"
+  COLLECTION_NAME: "enterprise_docs"
+  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+  GEMINI_MODEL: "gemini-3.5-flash-lite"
+  DOMAIN_SIMILARITY_THRESHOLD: "0.35"
+
+jobs:
+  # Stage 1: unit and integration tests
+  unit-and-integration-tests:
+    name: "Stage 1: Pytest Unit & Integration Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl
+
+      - name: Install PyTorch CPU-only
+        run: |
+          pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir pytest ruff
+
+      - name: Code Quality & Linting
+        run: |
+          ruff check src/ tests/
+
+      - name: Execute Pytest Suite (Unit Tests)
+        run: |
+          pytest tests/unit/ -v
+
+  # Stage 2: mini evaluation quality gate
+  mini-eval-quality-gate:
+    name: "Stage 2: Mini-Eval Quantitative Quality Gate"
+    needs: [unit-and-integration-tests]
+    runs-on: ubuntu-latest
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.11.0
+        ports:
+          - 6333:6333
+          - 6334:6334
+        options: >-
+          --health-cmd "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install PyTorch CPU-only
+        run: |
+          pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Ingest Knowledge Base Documents
+        run: |
+          python scripts/ingest.py --recreate
+
+      - name: Run Mini-Evaluation Canary (CI Gate)
+        run: |
+          python scripts/run_eval.py --mini
+
+      - name: Upload Evaluation Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-reports
+          path: reports/
+          retention-days: 7
+
+  # Stage 3: vulnerability and container scanning 
+  security-vulnerability-scan:
+    name: "Stage 3: Trivy Security CVE Scan"
+    needs: [mini-eval-quality-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Local Container Image for Scanning
+        run: |
+          docker build -t verirag-app:scan -f docker/Dockerfile .
+
+      - name: Scan Image for Vulnerabilities with Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "verirag-app:scan"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+  # Stage 4: multi-Stage production build
+  docker-production-build:
+    name: "Stage 4: Multi-Stage Docker Production Build"
+    needs: [security-vulnerability-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Production Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: verirag-fastapi:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
