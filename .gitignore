@@ -26,13 +26,15 @@ data/processed/*
 !data/golden/
 !data/golden/golden_dataset.json
 
-# Docker / logs
+# Docker / logs / reports
 *.log
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
 htmlcov/
 .coverage
+reports/*
+!reports/.gitkeep
 qdrant_storage/
 .agents/
 AGENTS.md

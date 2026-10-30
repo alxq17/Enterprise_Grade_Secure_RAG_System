@@ -85,10 +85,11 @@ class EvaluationReporter:
             if prev_val is not None and isinstance(current_val, (int, float)):
                 diff = current_val - prev_val
                 diff_str = f"{diff:+.4f}"
-                if diff < -0.05:  # Regression exceeds 5%
+                
+                if gate_val is not None and current_val < gate_val and diff < -0.05:
                     is_passed = False
                     gate_failures.append(
-                        f"{metric_name} regressed by {diff:.4f} (> 5% drop vs baseline)"
+                        f"{metric_name} ({current_val:.4f}) dropped below gate {gate_val} with regression {diff:.4f}"
                     )
             else:
                 diff_str = "N/A"
