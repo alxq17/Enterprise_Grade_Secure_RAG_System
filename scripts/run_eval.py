@@ -1,5 +1,5 @@
-import json
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -7,15 +7,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.core.logging import app_logger
-from src.rag.pipeline import RAGPipeline
-from src.eval.retrieval_eval import RetrievalEvaluator
+from src.eval.mini_eval import run_mini_evaluation
 from src.eval.ragas_runner import RagasRunner
 from src.eval.reporter import EvaluationReporter
-from src.eval.mini_eval import run_mini_evaluation
+from src.eval.retrieval_eval import RetrievalEvaluator
+from src.rag.pipeline import RAGPipeline
 
 
 def load_golden_dataset(path: str, limit: int | None = None):
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     if limit:
         return data[:limit]
@@ -46,21 +46,25 @@ def run_full_evaluation(golden_path: str, output_dir: str = "reports") -> bool:
 
         # Only evaluate faithfulness on in-domain queries where context was retrieved
         if is_in_domain and contexts:
-            records_for_ragas.append({
+            records_for_ragas.append(
+                {
+                    "question": q,
+                    "contexts": contexts,
+                    "answer": answer,
+                    "ground_truth": gt,
+                }
+            )
+
+        details.append(
+            {
                 "question": q,
-                "contexts": contexts,
                 "answer": answer,
                 "ground_truth": gt,
-            })
-
-        details.append({
-            "question": q,
-            "answer": answer,
-            "ground_truth": gt,
-            "is_in_domain": is_in_domain,
-            "sources_count": len(result.get("sources", [])),
-            "latency_total_ms": result["timings_ms"]["total_ms"],
-        })
+                "is_in_domain": is_in_domain,
+                "sources_count": len(result.get("sources", [])),
+                "latency_total_ms": result["timings_ms"]["total_ms"],
+            }
+        )
 
     # 3. Ragas generation evaluation
     ragas_runner = RagasRunner()

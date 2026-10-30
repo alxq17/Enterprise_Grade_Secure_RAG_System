@@ -14,6 +14,7 @@ env:
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
   GEMINI_MODEL: "gemini-3.5-flash-lite"
   DOMAIN_SIMILARITY_THRESHOLD: "0.35"
+  PYTHONPATH: "."
 
 jobs:
   # Stage 1: unit and integration tests

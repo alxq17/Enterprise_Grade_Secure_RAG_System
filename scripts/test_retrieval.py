@@ -1,15 +1,16 @@
-import sys
 import argparse
+import sys
 from pathlib import Path
 
 # Ensure project root is in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tabulate import tabulate
+
+from src.config.settings import settings
 from src.core.logging import app_logger
 from src.retrieval.hybrid_search import HybridRetriever
 from src.retrieval.reranker import DocumentReranker
-from src.config.settings import settings
 
 
 def main():
@@ -45,7 +46,13 @@ def main():
     print("\n" + "=" * 90)
     print(f"  RETRIEVAL & RERANK RESULTS for: '{args.query}'")
     print("=" * 90)
-    print(tabulate(table_data, headers=["Rank", "Score", "Domain Status", "Source", "Chunk Snippet"], tablefmt="grid"))
+    print(
+        tabulate(
+            table_data,
+            headers=["Rank", "Score", "Domain Status", "Source", "Chunk Snippet"],
+            tablefmt="grid",
+        )
+    )
     print("=" * 90 + "\n")
 
 
