@@ -1,6 +1,7 @@
 # Git & Version Control
 .git/
 .gitignore
+.github
 
 # Python virtual environment & cache
 .venv/
@@ -12,6 +13,7 @@ __pycache__/
 *.so
 .pytest_cache/
 .ruff_cache/
+htmlcov
 
 # Local configuration & secrets
 .env

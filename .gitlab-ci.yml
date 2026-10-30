@@ -1,0 +1,92 @@
+stages:
+  - test
+  - quality-gate
+  - security-scan
+  - build-and-publish
+
+variables:
+  PYTHON_VERSION: "3.11"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  QDRANT_HOST: "qdrant"
+  QDRANT_PORT: "6333"
+  COLLECTION_NAME: "enterprise_docs"
+  GEMINI_MODEL: "gemini-3.5-flash-lite"
+  DOMAIN_SIMILARITY_THRESHOLD: "0.35"
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  IMAGE_LATEST: "$CI_REGISTRY_IMAGE:latest"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip/
+
+# Stage 1: Pytest Unit and Integration Tests
+unit-and-integration-tests:
+  stage: test
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends build-essential curl
+    - pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+    - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest ruff
+  script:
+    - ruff check src/ tests/
+    - pytest tests/unit/ -v
+
+# Stage 2: Mini-Evaluation Quantitative Quality Gate
+mini-eval-quality-gate:
+  stage: quality-gate
+  image: python:3.11-slim
+  needs:
+    - job: unit-and-integration-tests
+  services:
+    - name: qdrant/qdrant:v1.11.0
+      alias: qdrant
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends curl
+    - pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+    - pip install --no-cache-dir -r requirements.txt
+  script:
+    - python scripts/ingest.py --recreate
+    - python scripts/run_eval.py --mini
+  artifacts:
+    when: always
+    name: "evaluation-reports-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - reports/
+    expire_in: 7 days
+
+# Stage 3: Trivy Security CVE Scan
+security-vulnerability-scan:
+  stage: security-scan
+  image: docker:24.0.5
+  needs:
+    - job: mini-eval-quality-gate
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+  script:
+    - docker build -t verirag-app:scan -f docker/Dockerfile .
+    - trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed --vuln-type os,library verirag-app:scan
+
+# Stage 4: Multi-Stage Docker Production Build and Registry Push
+docker-production-build:
+  stage: build-and-publish
+  image: docker:24.0.5
+  needs:
+    - job: security-vulnerability-scan
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_TAG -t $IMAGE_LATEST -f docker/Dockerfile .
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_LATEST
+  only:
+    - main
+    - master
