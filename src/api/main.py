@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.core.logging import app_logger
+
 from src.api.middleware import TraceAndLoggingMiddleware
-from src.api.routes import health, query, metrics
+from src.api.routes import health, metrics, query
+from src.core.logging import app_logger
 
 
 @asynccontextmanager

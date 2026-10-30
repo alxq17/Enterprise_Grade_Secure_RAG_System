@@ -1,12 +1,14 @@
 import time
 from pathlib import Path
-from typing import List, Dict, Any
-from src.core.logging import app_logger
+from typing import Any
+
 from src.core.exceptions import IngestionError
+from src.core.logging import app_logger
 from src.ingestion.chunker import DocumentChunker
 from src.ingestion.embedder import BGEM3Embedder
 from src.ingestion.indexer import QdrantIndexer
 from src.ingestion.loaders import DocumentLoader
+
 
 class IngestionPipeline:
     def __init__(self, chunk_size: int = 512, chunk_overlap: int = 50):
@@ -29,7 +31,7 @@ class IngestionPipeline:
         app_logger.info(f"Starting to process  {len(files)} files...")
 
         # 1 Chunking
-        all_chunks: List[Dict[str, Any]] = []
+        all_chunks: list[dict[str, Any]] = []
         for file in files:
             try:
                 docs = self.loader.load_file(str(file))

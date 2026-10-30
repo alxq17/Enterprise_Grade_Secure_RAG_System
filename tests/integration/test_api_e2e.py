@@ -1,5 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from src.api.main import app
 
 client = TestClient(app)
@@ -28,10 +28,7 @@ def test_query_validation_error():
 
 
 def test_query_e2e_success():
-    payload = {
-        "question": "What are the requirements regarding passwords and MFA?",
-        "top_k": 3
-    }
+    payload = {"question": "What are the requirements regarding passwords and MFA?", "top_k": 3}
     response = client.post("/api/v1/query", json=payload)
     assert response.status_code == 200
     data = response.json()

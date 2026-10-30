@@ -1,4 +1,5 @@
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from src.core.logging import app_logger
 from src.retrieval.hybrid_search import HybridRetriever
 from src.retrieval.reranker import DocumentReranker
@@ -12,11 +13,13 @@ class RetrievalEvaluator:
     Requires no external LLM API calls.
     """
 
-    def __init__(self, retriever: Optional[HybridRetriever] = None, reranker: Optional[DocumentReranker] = None):
+    def __init__(
+        self, retriever: HybridRetriever | None = None, reranker: DocumentReranker | None = None
+    ):
         self.retriever = retriever or HybridRetriever()
         self.reranker = reranker or DocumentReranker()
 
-    def evaluate_item(self, query: str, expected_source: str, top_k: int = 5) -> Dict[str, float]:
+    def evaluate_item(self, query: str, expected_source: str, top_k: int = 5) -> dict[str, float]:
         """Evaluate retrieval performance for a single query."""
         initial_chunks = self.retriever.search(query, top_k=10)
         ranked_chunks = self.reranker.rerank(query, initial_chunks, top_k=top_k)
@@ -28,7 +31,10 @@ class RetrievalEvaluator:
         for rank, chunk in enumerate(ranked_chunks, start=1):
             source_file = chunk.get("metadata", {}).get("source_file", "")
             # Check if source matches expected
-            if expected_source.lower() in source_file.lower() or source_file.lower() in expected_source.lower():
+            if (
+                expected_source.lower() in source_file.lower()
+                or source_file.lower() in expected_source.lower()
+            ):
                 if rank <= 3:
                     hit_at_3 = True
                 if rank <= 5:
@@ -43,12 +49,11 @@ class RetrievalEvaluator:
             "mrr": reciprocal_rank,
         }
 
-    def evaluate_dataset(self, dataset: List[Dict[str, Any]], top_k: int = 5) -> Dict[str, float]:
+    def evaluate_dataset(self, dataset: list[dict[str, Any]], top_k: int = 5) -> dict[str, float]:
         """Evaluate entire dataset and compute mean metrics."""
         # Only evaluate in-domain questions that have expected source
         in_domain_items = [
-            item for item in dataset
-            if item.get("is_in_domain", True) and item.get("source_file")
+            item for item in dataset if item.get("is_in_domain", True) and item.get("source_file")
         ]
 
         count = len(in_domain_items)

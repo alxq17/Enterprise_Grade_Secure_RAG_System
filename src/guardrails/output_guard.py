@@ -1,5 +1,5 @@
 import re
-from typing import Tuple, List, Optional
+
 from src.core.logging import app_logger
 
 
@@ -27,11 +27,11 @@ class OutputGuard:
         lowered = answer.lower()
         return any(ind in lowered for ind in self.FALLBACK_INDICATORS)
 
-    def extract_citations(self, answer: str) -> List[str]:
+    def extract_citations(self, answer: str) -> list[str]:
         """Extract all [source - Page X] or [source] citations from answer text."""
         return self.CITATION_PATTERN.findall(answer)
 
-    def validate(self, answer: str, context: str) -> Tuple[bool, Optional[str]]:
+    def validate(self, answer: str, context: str) -> tuple[bool, str | None]:
         """
         Validate answer fidelity:
         - Must not be empty.

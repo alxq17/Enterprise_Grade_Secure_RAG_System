@@ -1,14 +1,17 @@
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
+
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
+
 from src.core.logging import app_logger
 from src.ingestion.cleaners import TextCleaner
+
 
 class DocumentLoader:
     def __init__(self):
         self.cleaner = TextCleaner()
 
-    def load_file(self, file_path: str) -> List[Dict[str, Any]]:
+    def load_file(self, file_path: str) -> list[dict[str, Any]]:
         """Read the file and return a list of documents with their associated, normalized metadata"""
         path = Path(file_path)
         if not path.exists():
@@ -34,19 +37,21 @@ class DocumentLoader:
             clean_content = self.cleaner.clean(doc.page_content)
             if not clean_content:
                 continue
-            page_num = doc.metadata.get("page", 0) + 1  
-            cleaned_docs.append({
-                "content": clean_content,
-                "metadata": {
-                    "source_file": path.name,
-                    "page_number": page_num,
-                    "extension": ext
+            page_num = doc.metadata.get("page", 0) + 1
+            cleaned_docs.append(
+                {
+                    "content": clean_content,
+                    "metadata": {
+                        "source_file": path.name,
+                        "page_number": page_num,
+                        "extension": ext,
+                    },
                 }
-            })
+            )
 
         return cleaned_docs
 
-    def load_directory(self, dir_path: str) -> List[Dict[str, Any]]:
+    def load_directory(self, dir_path: str) -> list[dict[str, Any]]:
         """scan and read all documents in a folder"""
         target_dir = Path(dir_path)
         if not target_dir.is_dir():

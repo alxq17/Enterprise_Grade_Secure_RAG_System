@@ -1,22 +1,23 @@
 import time
-from typing import Dict, Any, List, Optional
-from src.core.logging import app_logger
+from typing import Any
+
 from src.core.interfaces import BaseLLMClient
+from src.core.logging import app_logger
+from src.guardrails import (
+    DomainGuard,
+    InputGuard,
+    OutputGuard,
+    PIIMasker,
+    PromptInjectionError,
+)
+from src.llm.gemini_client import GeminiClient
+from src.retrieval.context_builder import ContextBuilder
 from src.retrieval.hybrid_search import HybridRetriever
 from src.retrieval.reranker import DocumentReranker
-from src.retrieval.context_builder import ContextBuilder
-from src.llm.gemini_client import GeminiClient
-from src.guardrails import (
-    InputGuard,
-    PromptInjectionError,
-    PIIMasker,
-    DomainGuard,
-    OutputGuard,
-)
 
 
 class RAGPipeline:
-    def __init__(self, llm: Optional[BaseLLMClient] = None):
+    def __init__(self, llm: BaseLLMClient | None = None):
         self.input_guard = InputGuard()
         self.pii_masker = PIIMasker()
         self.domain_guard = DomainGuard()
@@ -25,9 +26,11 @@ class RAGPipeline:
         self.reranker = DocumentReranker()
         self.context_builder = ContextBuilder()
         self.llm = llm or GeminiClient()
-        app_logger.info(f"[RAGPipeline] RAG Pipeline initialized with {self.llm.__class__.__name__}")
+        app_logger.info(
+            f"[RAGPipeline] RAG Pipeline initialized with {self.llm.__class__.__name__}"
+        )
 
-    def run(self, query: str, top_k: int = 3) -> Dict[str, Any]:
+    def run(self, query: str, top_k: int = 3) -> dict[str, Any]:
         t_start = time.time()
         timings = {"search_ms": 0.0, "rerank_ms": 0.0, "llm_ms": 0.0, "total_ms": 0.0}
 
@@ -36,10 +39,12 @@ class RAGPipeline:
         if not is_safe:
             raise PromptInjectionError(error_msg or "Prompt injection detected.")
 
-        # Layer 2: PII MASKING 
+        # Layer 2: PII MASKING
         masked_query, pii_map = self.pii_masker.mask(query)
         if pii_map:
-            app_logger.info(f"[PIIMasker] Anonymized {len(pii_map)} PII entities before external processing.")
+            app_logger.info(
+                f"[PIIMasker] Anonymized {len(pii_map)} PII entities before external processing."
+            )
 
         # Layer 3: HYBRID RETRIEVAL AND RERANKING
         t_search = time.time()
@@ -50,7 +55,7 @@ class RAGPipeline:
         top_chunks = self.reranker.rerank(masked_query, initial_chunks, top_k=top_k)
         timings["rerank_ms"] = round((time.time() - t_rerank) * 1000, 2)
 
-        # Layer 4: DOMAIN GUARD 
+        # Layer 4: DOMAIN GUARD
         if not self.domain_guard.is_in_domain(top_chunks):
             timings["total_ms"] = round((time.time() - t_start) * 1000, 2)
             return {

@@ -1,5 +1,5 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from src.eval.ragas_runner import RagasRunner
 
 
@@ -22,7 +22,7 @@ def test_ragas_runner_mocked_success(mock_evaluate):
             "question": "What is MFA?",
             "contexts": ["MFA is required for VPN."],
             "answer": "MFA is required for VPN access.",
-            "ground_truth": "MFA is required for VPN."
+            "ground_truth": "MFA is required for VPN.",
         }
     ]
     scores = runner.run_evaluation(records)

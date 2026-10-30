@@ -1,6 +1,7 @@
-from typing import List, Dict, Any, Optional
-from src.core.logging import app_logger
+from typing import Any
+
 from src.config.settings import settings
+from src.core.logging import app_logger
 
 
 class DomainGuard:
@@ -10,10 +11,12 @@ class DomainGuard:
     the query is marked out-of-domain and the pipeline short-circuits.
     """
 
-    def __init__(self, threshold: Optional[float] = None):
-        self.threshold = threshold if threshold is not None else settings.DOMAIN_SIMILARITY_THRESHOLD
+    def __init__(self, threshold: float | None = None):
+        self.threshold = (
+            threshold if threshold is not None else settings.DOMAIN_SIMILARITY_THRESHOLD
+        )
 
-    def is_in_domain(self, top_chunks: List[Dict[str, Any]]) -> bool:
+    def is_in_domain(self, top_chunks: list[dict[str, Any]]) -> bool:
         """Check if top retrieval results meet minimum relevance threshold."""
         if not top_chunks or len(top_chunks) == 0:
             app_logger.warning("[DomainGuard] No chunks returned from Retrieval layer.")

@@ -1,6 +1,6 @@
 import argparse
-import sys
 import time
+
 from src.core.logging import app_logger
 from src.retrieval.context_builder import ContextBuilder
 from src.retrieval.hybrid_search import HybridRetriever
@@ -21,14 +21,16 @@ def run_test(query: str):
     if not initial_chunks:
         app_logger.warning("No relevant documents found in Qdrant.")
         return
-    app_logger.info(f"Qdrant RRF returned {len(initial_chunks)} chunks " f"in {search_latency:.2f}s")
+    app_logger.info(f"Qdrant RRF returned {len(initial_chunks)} chunks in {search_latency:.2f}s")
 
     # 2. Rerank using Cross-Encoder
     t_rerank = time.time()
     top_chunks = reranker.rerank(query, initial_chunks, top_k=3)
     rerank_latency = time.time() - t_rerank
 
-    app_logger.info(f"Reranking completed in {rerank_latency:.2f}s. " f"Total time: {time.time() - t0:.2f}s\n")
+    app_logger.info(
+        f"Reranking completed in {rerank_latency:.2f}s. Total time: {time.time() - t0:.2f}s\n"
+    )
 
     # 3. Display the Top-3 Results
     print("=" * 80)
@@ -37,8 +39,8 @@ def run_test(query: str):
 
     for i, c in enumerate(top_chunks, 1):
         meta = c["metadata"]
-        print(f"\n[#{i}] Rerank Score: {c['rerank_score']:.4f} " f"| RRF Score: {c['score']:.4f}")
-        print(f"    Source: {meta['source_file']} " f"(Page {meta['page_number']})")
+        print(f"\n[#{i}] Rerank Score: {c['rerank_score']:.4f} | RRF Score: {c['score']:.4f}")
+        print(f"    Source: {meta['source_file']} (Page {meta['page_number']})")
         print(f"    Content: {c['text'][:250]}...")
         print("-" * 80)
 

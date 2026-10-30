@@ -1,5 +1,7 @@
 import sys
+
 from loguru import logger
+
 from src.config.settings import settings
 
 # Ensure UTF-8 output on Windows consoles to prevent UnicodeEncodeError with multilingual logs
@@ -10,6 +12,7 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
+
 def setup_logging():
     """Config loguru logger for Enterprise."""
     logger.remove()
@@ -19,7 +22,13 @@ def setup_logging():
         "<cyan>{name}</cyan>:<cyan>{line}</cyan> | "
         "<level>{message}</level>"
     )
-    logger.add(sys.stdout, format=log_format, level=settings.LOG_LEVEL, colorize=True,)
+    logger.add(
+        sys.stdout,
+        format=log_format,
+        level=settings.LOG_LEVEL,
+        colorize=True,
+    )
     return logger
+
 
 app_logger = setup_logging()

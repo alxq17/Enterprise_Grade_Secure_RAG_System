@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -44,5 +45,6 @@ class Settings(BaseSettings):
 
     # Eval
     API_BASE_URL: str = "http://localhost:8080"
+
 
 settings = Settings()

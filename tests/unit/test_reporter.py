@@ -1,7 +1,9 @@
 import os
 import shutil
 import tempfile
+
 import pytest
+
 from src.eval.reporter import EvaluationReporter
 
 
@@ -21,9 +23,7 @@ def test_reporter_export_and_pass_gates(temp_reports_dir):
         "faithfulness": 0.90,
         "answer_relevancy": 0.85,
     }
-    details = [
-        {"question": "Q1", "answer": "A1", "latency_total_ms": 150.0}
-    ]
+    details = [{"question": "Q1", "answer": "A1", "latency_total_ms": 150.0}]
 
     report_path, passed = reporter.export_summary(metrics, details)
     assert passed is True

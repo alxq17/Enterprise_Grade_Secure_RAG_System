@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+
+from src.api.middleware import GEMINI_TOKENS_TOTAL, GUARDRAIL_BLOCKED_TOTAL
 from src.api.schemas import QueryRequest, QueryResponse
-from src.rag.pipeline import RAGPipeline
 from src.core.logging import app_logger
 from src.guardrails.input_guard import PromptInjectionError
-from src.api.middleware import GUARDRAIL_BLOCKED_TOTAL, GEMINI_TOKENS_TOTAL
+from src.rag.pipeline import RAGPipeline
 
 router = APIRouter(prefix="/api/v1", tags=["RAG Query"])
 rag_pipeline: RAGPipeline | None = None

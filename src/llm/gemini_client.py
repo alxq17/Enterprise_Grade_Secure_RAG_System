@@ -1,17 +1,24 @@
 import time
-from typing import Dict, Any, Optional
+from typing import Any
+
 from google import genai
 from google.genai import types
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, before_sleep_log
-import logging
-from src.core.logging import app_logger
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
 from src.config.settings import settings
 from src.core.exceptions import VeriRAGException
 from src.core.interfaces import BaseLLMClient
+from src.core.logging import app_logger
 
 
 class LLMError(VeriRAGException):
     """Exception raised for errors during LLM generation."""
+
     pass
 
 
@@ -27,10 +34,10 @@ class GeminiClient(BaseLLMClient):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model_name: Optional[str] = None,
-        timeout_seconds: Optional[int] = None,
-        max_retries: Optional[int] = None,
+        api_key: str | None = None,
+        model_name: str | None = None,
+        timeout_seconds: int | None = None,
+        max_retries: int | None = None,
     ):
         self.api_key = api_key or settings.GEMINI_API_KEY
         if not self.api_key:
@@ -80,13 +87,15 @@ class GeminiClient(BaseLLMClient):
 
         return _call()
 
-    def generate_answer(self, query: str, context: str) -> Dict[str, Any]:
+    def generate_answer(self, query: str, context: str) -> dict[str, Any]:
         """
         Generate answer based strictly on retrieved context.
         Returns dict: answer, input_tokens, output_tokens, latency_ms.
         """
         if not context.strip():
-            app_logger.warning(f"[GeminiClient] Empty context received for query: '{query[:60]}...'")
+            app_logger.warning(
+                f"[GeminiClient] Empty context received for query: '{query[:60]}...'"
+            )
             return {
                 "answer": "I cannot find relevant information in the internal documentation to answer this question.",
                 "input_tokens": 0,
@@ -113,7 +122,9 @@ class GeminiClient(BaseLLMClient):
 
         t0 = time.time()
         try:
-            response = self._execute_with_retry(prompt=prompt, system_instruction=system_instruction)
+            response = self._execute_with_retry(
+                prompt=prompt, system_instruction=system_instruction
+            )
             latency_ms = round((time.time() - t0) * 1000, 2)
 
             # Token tracking & extraction
@@ -124,7 +135,9 @@ class GeminiClient(BaseLLMClient):
             else:
                 # Fallback token counting if usage_metadata not available
                 try:
-                    count_resp = self.client.models.count_tokens(model=self.model_name, contents=prompt)
+                    count_resp = self.client.models.count_tokens(
+                        model=self.model_name, contents=prompt
+                    )
                     input_tokens = count_resp.total_tokens
                 except Exception:
                     input_tokens = len(prompt.split())  # approximate heuristic
@@ -156,7 +169,7 @@ class GeminiClient(BaseLLMClient):
             app_logger.error(f"[GeminiClient] Generation failed after {latency_ms}ms: {e}")
             raise LLMError(f"Error connecting to the Gemini model: {e}") from e
 
-    def get_token_usage(self) -> Dict[str, int]:
+    def get_token_usage(self) -> dict[str, int]:
         """Return cumulative token usage statistics for telemetry and cost tracking."""
         return {
             "total_input_tokens": self.total_input_tokens,

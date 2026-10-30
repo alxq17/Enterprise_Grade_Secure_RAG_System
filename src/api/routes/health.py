@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from starlette.responses import JSONResponse
 from qdrant_client import QdrantClient
+from starlette.responses import JSONResponse
+
 from src.config.settings import settings
 
 router = APIRouter(tags=["Health"])
