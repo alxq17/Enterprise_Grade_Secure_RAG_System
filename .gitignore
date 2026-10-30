@@ -17,10 +17,11 @@ env/
 .env
 .env.local
 
-# Data — cho phép commit golden
+
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep
+!data/raw/company_security_policy.md
 !data/processed/.gitkeep
 !data/golden/
 !data/golden/golden_dataset.json
