@@ -3,7 +3,7 @@ import math
 from typing import Any, Dict, List
 from datasets import Dataset
 from ragas import evaluate
-from ragas.metrics import faithfulness, answer_relevancy
+from ragas.metrics import (faithfulness, answer_relevancy,)
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from src.config.settings import settings
 from src.core.logging import app_logger
