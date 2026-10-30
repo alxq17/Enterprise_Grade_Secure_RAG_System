@@ -1,0 +1,31 @@
+http:
+  routers:
+    api-router:
+      entryPoints:
+        - "web"
+      rule: "PathPrefix(`/`)"
+      service: "fastapi-service"
+      middlewares:
+        - "security-headers"
+        - "rate-limit"
+
+  services:
+    fastapi-service:
+      loadBalancer:
+        servers:
+          - url: "http://fastapi:8000"
+
+  middlewares:
+    security-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: false
+        browserXssFilter: true
+        contentTypeNosniff: true
+        customResponseHeaders:
+          X-Powered-By: "VeriRAG-Secure-Gateway"
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
