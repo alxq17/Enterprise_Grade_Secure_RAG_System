@@ -1,4 +1,4 @@
-# VeriRAG : Système RAG Sécurisé d'Entreprise avec Réponses Vérifiables
+# Enterprise_Grade_Secure_RAG_System
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-009688.svg)](https://fastapi.tiangolo.com)
