@@ -247,7 +247,3 @@ Les rapports d'évaluation sont automatiquement exportés au format CSV dans le 
 
 
 ---
-
-## 📄 Licence
-
-Ce projet est distribué sous licence [MIT](LICENSE).
